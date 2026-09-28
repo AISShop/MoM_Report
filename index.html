@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dashboard → PowerPoint · Area South</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<style>
+:root{
+  --bg:#F2F5F1; --card:#FFFFFF; --text:#18221C; --mute:#5E6A63; --line:#DDE4DB;
+  --brand:#0A5C36; --lime:#8DC63F; --brand-soft:#E6F0E3; --red:#C62828; --red-soft:#FBE7E7;
+  --input:#FFFFFF; --drop:#F8FBF6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1512; --card:#18211C; --text:#E6EEE8; --mute:#9AA8A0; --line:#2A362F;
+    --brand:#5FBF7E; --lime:#9ED35A; --brand-soft:#1F3226; --red:#FF7A7A; --red-soft:#3A1F1F;
+    --input:#111814; --drop:#141C17;
+  }
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"IBM Plex Sans Thai",Tahoma,"Segoe UI",Arial,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1140px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:clamp(24px,4vw,32px);margin:0 0 4px;color:var(--brand)}
+.sub{color:var(--mute);margin:0 0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px}
+.step{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:17px;font-weight:600}
+.num{width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:14px;flex:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.field label{display:block;font-size:13px;color:var(--mute);margin-bottom:2px}
+.field input,.field select,td input,td select{width:100%;font:inherit;font-size:14px;color:var(--text);background:var(--input);border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+input:focus,select:focus{outline:2px solid var(--lime);outline-offset:-1px}
+.check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);margin-top:6px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tab{background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:7px 16px;font-weight:600;display:flex;gap:8px;align-items:center}
+.tab.active{background:var(--brand);color:#fff}
+.tab .badge{font-size:12px;font-weight:500;opacity:.85}
+.drop{border:2px dashed var(--line);border-radius:12px;background:var(--drop);padding:22px;text-align:center;cursor:pointer}
+.drop.over,.drop:focus-visible{border-color:var(--brand);outline:none}
+.drop strong{color:var(--brand)}
+.drop small{color:var(--mute);display:block;margin-top:4px}
+.thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.thumb{position:relative;width:180px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--input)}
+.thumb img{display:block;width:100%;height:100px;object-fit:cover;object-position:top}
+.thumb button{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border-radius:6px;padding:2px 8px;font-size:13px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+button{font:inherit;border:0;border-radius:10px;padding:10px 18px;cursor:pointer;font-weight:600}
+.btn{background:var(--brand);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn2{background:var(--brand-soft);color:var(--brand)}
+.ghost{background:transparent;color:var(--mute);padding:6px 10px}
+.ghost:hover{color:var(--red)}
+.status{color:var(--mute);font-size:14px}
+.status.err{color:var(--red)}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th{background:var(--brand);color:#fff;font-size:13px;font-weight:600;text-align:left;padding:8px;white-space:nowrap}
+td{border-top:1px solid var(--line);padding:4px 6px}
+td input.n{text-align:right;font-variant-numeric:tabular-nums}
+h3{font-size:15px;margin:20px 0 4px}
+.hint{color:var(--mute);font-size:13px;margin:0}
+.warn{background:var(--red-soft);color:var(--red);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
+td input.f-fixed{background:#FFF4C2;border-color:#E3B400;color:#1F2A24}
+td input.f-check,td input.f-missing,td input.f-bad{background:#FFE1E1;border-color:#D32F2F;color:#1F2A24}
+td input.f-calc{background:var(--brand-soft)}
+.lg{display:inline-block;padding:0 8px;border-radius:6px;margin:0 2px 0 10px;font-size:12px}
+.lg.fix{background:#FFF4C2;color:#6B5300}.lg.chk{background:#FFE1E1;color:#A01818}.lg.calc{background:var(--brand-soft);color:var(--brand)}
+.legend{margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dashboard → PowerPoint</h1>
+  <p class="sub">วางภาพ dashboard ของแต่ละกลุ่ม (Area South / SU / SL) → อ่านตัวเลขอัตโนมัติในเครื่อง (OCR) → ตรวจแก้ → ได้ .pptx ที่แก้ไขได้ทุกส่วน · ไม่ต้องใช้ key ไม่ส่งข้อมูลออก ไม่เก็บข้อมูล รีเฟรชแล้วหายหมด</p>
+
+  <section class="card">
+    <div class="step"><span class="num">1</span>วางรูปแต่ละกลุ่ม</div>
+    <div id="tabs" class="tabs"></div>
+    <div class="grid" style="grid-template-columns:minmax(200px,340px)">
+      <div class="field"><label for="secName">ชื่อกลุ่ม (แสดงบนสไลด์)</label><input id="secName"></div>
+    </div>
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="เพิ่มรูป" style="margin-top:12px">
+      <strong>Ctrl+V วางรูป</strong> · ลากไฟล์มาวาง · คลิกเลือกหลายไฟล์ได้
+      <small>รูปจะเข้ากลุ่มที่เลือกอยู่ · ใช้ screenshot เต็มความละเอียด (ไม่ย่อ) จะอ่านได้แม่นที่สุด</small>
+    </div>
+    <input id="file" type="file" accept="image/*" multiple hidden>
+    <div id="thumbs" class="thumbs"></div>
+    <div class="row">
+      <button id="readOne" class="btn">อ่านรูปกลุ่มนี้</button>
+      <button id="readAll" class="btn2">อ่านรูปทุกกลุ่ม</button>
+      <button id="delSec" class="ghost">ลบกลุ่มนี้</button>
+      <span id="readStatus" class="status"></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="step"><span class="num">2</span>ตรวจและแก้ข้อมูล — <span id="editName"></span></div>
+    <div class="grid">
+      <div class="field"><label for="deckTitle">ชื่อไฟล์ / หัวเรื่อง</label><input id="deckTitle" placeholder="Area South Performance — September 2026"></div>
+      <div class="field"><label for="prevLbl">เดือนก่อน</label><input id="prevLbl" placeholder="AUG"></div>
+      <div class="field"><label for="currLbl">เดือนนี้</label><input id="currLbl" placeholder="SEP"></div>
+      <div class="field"><label for="yearIn">ปี</label><input id="yearIn" placeholder="2026"></div>
+    </div>
+    <h3>เกจ (Target Achievement)</h3>
+    <p class="hint">Actual / Target เป็นตัวเลขเต็ม (1.07M = 1070000) · Actual คำนวณจาก % × Target ให้อัตโนมัติ</p>
+    <p class="hint legend"><span class="lg fix">เหลือง</span> ระบบแก้ตัวเลขให้แล้ว (ตรวจซ้ำอีกที) <span class="lg chk">แดง</span> อ่านไม่ได้ / ไม่แน่ใจ — กรอกหรือแก้เอง <span class="lg calc">เทา</span> คำนวณให้</p>
+    <div class="tblwrap"><table>
+      <thead><tr><th style="width:24%">Product</th><th style="width:16%">As of</th><th style="width:14%">% Achieve</th><th style="width:20%">Actual</th><th style="width:20%">Target</th><th></th></tr></thead>
+      <tbody id="gBody"></tbody>
+    </table></div>
+    <div class="row"><button id="addG" class="btn2">+ เพิ่มเกจ</button></div>
+    <h3>ตาราง MoM</h3>
+    <p class="hint">Level: 0 หัวข้อหลัก · 1 กลุ่มย่อย · 2 รายละเอียด · เว้น MoM ว่างได้ จะคำนวณให้</p>
+    <div class="tblwrap"><table>
+      <thead><tr><th style="width:30%">Product</th><th style="width:10%">Level</th><th style="width:20%">เดือนก่อน</th><th style="width:20%">เดือนนี้</th><th style="width:14%">MoM %</th><th></th></tr></thead>
+      <tbody id="rBody"></tbody>
+    </table></div>
+    <div class="row"><button id="addR" class="btn2">+ เพิ่มแถว</button></div>
+  </section>
+
+  <section class="card">
+    <div class="step"><span class="num">3</span>Export</div>
+    <div class="row" style="margin-top:0">
+      <button id="export" class="btn">ดาวน์โหลด PowerPoint</button>
+      <span id="exportStatus" class="status"></span>
+    </div>
+    <p class="hint" style="margin-top:10px">ปก → เทียบ % achievement ทุกกลุ่ม → แต่ละกลุ่ม: เกจ, ตาราง MoM, กราฟ MoM + insight (กลุ่มที่ไม่มีข้อมูลจะถูกข้าม)</p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  let uid = 0;
+  const newSec = name => ({ id: ++uid, name, images: [], gauges: [], rows: [], status: "" });
+  const S = { sections: [newSec("Area South"), newSec("SU"), newSec("SL")], active: 0 };
+  const cur = () => S.sections[S.active];
+
+  // ---------- OCR engine (runs in this browser; nothing leaves the device) ----------
+  /* ===== Dashboard OCR core: layout detection, cell reading, validation =====
+     Environment-neutral. Needs an adapter:
+       adapter.width, adapter.height            original image size
+       adapter.region(x, y, w, h, scale)        -> Promise<{data: RGBA Uint8ClampedArray, width, height}>
+       adapter.toInput({data,width,height})     -> something tesseract can recognize
+     and a tesseract.js worker.                                                    */
+  const DashOCR = (() => {
+    const MONTH = /^(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*$/i;
+    const DATE = /(\d{1,2})\/(\d{1,2})\/(\d{4})/;
+    const KNOWN = [
+      ["Postpaid All", 0], ["New Customer", 1], ["New Register", 2], ["Port in", 2], ["Pre to post", 2],
+      ["Postpaid Online", 2], ["Postpaid @Shop", 2], ["Upsell & OnTop", 1], ["AIS Fibre", 0], ["Prepaid(SIM)", 0],
+      ["Device(Units)", 0], ["Device(Revenue)", 0], ["Accessories", 0], ["VAS", 0], ["CARE Product(Units)", 0], ["CARE Product(Revenue)", 0],
+    ];
+    const GAUGE_NAMES = ["Postpaid", "FBB", "Prepaid", "Device", "Accessories", "VAS", "CARE Product"];
+
+    // ---------- pixel ops ----------
+    function prep(img, thr, invert){
+      const { data, width, height } = img, n = width * height, g = new Uint8ClampedArray(n);
+      let lo = 255, hi = 0;
+      for (let i = 0; i < n; i++) {                       // min channel: coloured text -> dark
+        const v = Math.min(data[i*4], data[i*4+1], data[i*4+2]); g[i] = v; if (v < lo) lo = v; if (v > hi) hi = v;
+      }
+      const span = Math.max(1, hi - lo), out = new Uint8ClampedArray(n * 4);
+      for (let i = 0; i < n; i++) {
+        let v = (g[i] - lo) / span * 255;
+        if (invert) v = 255 - v;
+        if (thr) v = v < thr ? 0 : 255;
+        out[i*4] = out[i*4+1] = out[i*4+2] = v; out[i*4+3] = 255;
+      }
+      return { data: out, width, height };
+    }
+
+    function parseTSV(tsv, scale){
+      const words = [];
+      for (const line of (tsv || "").split("\n")) {
+        const c = line.split("\t");
+        if (c.length < 12 || c[0] !== "5") continue;
+        const text = c[11].trim(); if (!text) continue;
+        words.push({ text, x: +c[6] / scale, y: +c[7] / scale, w: +c[8] / scale, h: +c[9] / scale, conf: +c[10] });
+      }
+      words.forEach(w => { w.cx = w.x + w.w / 2; w.cy = w.y + w.h / 2; });
+      return words;
+    }
+    const median = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : 0; };
+
+    // ---------- numbers ----------
+    function tableNum(t){
+      if (t == null) return null;
+      let s = String(t).replace(/[^0-9.,\-]/g, ""); if (!/\d/.test(s)) return null;
+      const neg = s.startsWith("-"); s = s.replace(/-/g, "");
+      const parts = s.split(/[.,]/).filter(p => p !== "");
+      if (!parts.length) return null;
+      let v;
+      if (parts.length > 1 && parts[parts.length - 1].length <= 2) v = +(parts.slice(0, -1).join("") + "." + parts[parts.length - 1]);
+      else v = +parts.join("");
+      return isNaN(v) ? null : (neg ? -v : v);
+    }
+    function pctNum(t){
+      const m = /(-?)\s*(\d{1,3})[.,](\d{2})/.exec(String(t || "").replace(/\s/g, ""));
+      return m ? (m[1] ? -1 : 1) * +(m[2] + "." + m[3]) : null;
+    }
+    function unitNum(txt, unit){
+      const m = /(\d+(?:[.,]\d+)?)\s*([KMB])?/i.exec(txt); if (!m) return null;
+      const u = (m[2] || unit || "").toUpperCase();
+      return +m[1].replace(",", ".") * (u === "K" ? 1e3 : u === "M" ? 1e6 : u === "B" ? 1e9 : 1);
+    }
+
+    // ---------- fuzzy names ----------
+    const norm = s => s.toLowerCase().replace(/[^a-z0-9@&]/g, "");
+    function lev(a, b){
+      const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+      for (let j = 1; j <= b.length; j++) d[0][j] = j;
+      for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+        d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+      return d[a.length][b.length];
+    }
+    function matchName(raw, list){
+      const n = norm(raw); if (!n) return null;
+      let best = null, bs = 0;
+      for (const item of list) {
+        const k = norm(Array.isArray(item) ? item[0] : item);
+        const s = 1 - lev(n, k) / Math.max(n.length, k.length);
+        if (s > bs) { bs = s; best = item; }
+      }
+      return bs >= 0.6 ? best : null;
+    }
+
+    // ---------- layout ----------
+    function layout(words, imgW){
+      const prodW = words.find(w => w.text === "PRODUCT" && w.x < imgW * 0.2);
+      const dates = words.filter(w => DATE.test(w.text));
+      const dateBottom = dates.length ? Math.max(...dates.map(w => w.y + w.h)) : 0;
+      const headerY = prodW ? prodW.cy : null;
+      const top = headerY != null ? headerY + 8 : dateBottom + 10;
+      const body = words.filter(w => w.cy > top);
+      // numeric columns = x-clusters of numeric tokens (works even when header text is unreadable)
+      const nums = body.filter(w => /\d/.test(w.text) && w.x > imgW * 0.25).sort((a, b) => a.x - b.x);
+      const clusters = [];
+      nums.forEach(w => { const c = clusters.find(c => Math.abs(c.x - w.x) < 30); if (c) { c.items.push(w); c.x = median(c.items.map(i => i.x)); } else clusters.push({ x: w.x, items: [w] }); });
+      const cols3 = clusters.filter(c => c.items.length >= 3).sort((a, b) => a.x - b.x);
+      let table = null;
+      if (cols3.length >= 3) {
+        const pc = cols3.slice().reverse().find(c => c.items.filter(i => /%/.test(i.text)).length >= c.items.length / 2) || cols3[cols3.length - 1];
+        const pi = cols3.indexOf(pc), c2 = cols3[pi - 1], c1 = cols3[pi - 2];
+        if (c1 && c2) {
+          const x1 = c1.x, x2 = c2.x, x3 = pc.x;
+          const cols = [[x1 - 6, x2 - 20], [x2 - 6, x3 - 20], [x3 - 6, Math.min(imgW, x3 + (x2 - x1) * 0.45)]];
+          const numW = body.filter(w => w.x > x1 - 12 && /\d/.test(w.text));
+          const nameW = body.filter(w => w.x + w.w < x1 - 10 && /[A-Za-z]{2,}/.test(w.text) && w.conf > 30 && !/^[\[\(]?[ivIA]{1,2}[\)\]]?$/.test(w.text));
+          const th = median(numW.map(w => w.h)) || 7;
+          const ys = numW.map(w => w.cy).concat(nameW.map(w => w.cy)).sort((a, b) => a - b);
+          const groups = [];
+          ys.forEach(y => { const g = groups[groups.length - 1]; if (g && y - g[g.length - 1] < th * 1.6) g.push(y); else groups.push([y]); });
+          const rows = groups.map(g => {
+            const yc = median(g);
+            const names = nameW.filter(w => Math.abs(w.cy - yc) < th * 1.6).sort((a, b) => a.x - b.x);
+            const nn = numW.filter(w => Math.abs(w.cy - yc) < th * 1.6);
+            return { cy: nn.length ? median(nn.map(w => w.cy)) : yc, rawName: names.map(w => w.text).join(" "), nameX: names.length ? names[0].x : null };
+          });
+          const hy = headerY != null ? headerY : Math.min(...rows.map(r => r.cy)) - th * 3.5;
+          const hdrM = words.filter(w => MONTH.test(w.text) && Math.abs(w.cy - hy) < 14).sort((a, b) => a.x - b.x);
+          table = { headerY: hy, cols, rows, th, labels: hdrM.length >= 2 ? [hdrM[0].text.toUpperCase(), hdrM[1].text.toUpperCase()] : null };
+        }
+      }
+      // gauges: dates above the table
+      const tableTop = table ? table.headerY : Infinity;
+      dates.splice(0, dates.length, ...dates.filter(w => w.cy < tableTop).sort((a, b) => a.x - b.x));
+      const gauges = dates.map((d, i) => {
+        const h = d.h || 9;
+        const asW = words.filter(w => /^as$/i.test(w.text) && Math.abs(w.cy - d.cy) < h && w.x < d.x && d.x - w.x < h * 8).sort((a, b) => b.x - a.x)[0];
+        const left = asW ? asW.x : d.x - h * 4.2;
+        const cx = (left + d.x + d.w) / 2;
+        return { d, h, cx };
+      });
+      const spacing = gauges.length > 1 ? median(gauges.slice(1).map((g, i) => g.cx - gauges[i].cx)) : 240;
+      gauges.forEach(g => {
+        const h = g.h;
+        const nameWs = words.filter(w => w.cy < g.d.y && w.cy > g.d.y - h * 4 && Math.abs(w.cx - g.cx) < spacing * 0.4 && /[A-Za-z]/.test(w.text)).sort((a, b) => a.x - b.x);
+        const nameTop = nameWs.length ? Math.min(...nameWs.map(w => w.y)) : g.d.y - h * 3.1;
+        g.rawName = nameWs.map(w => w.text).join(" ");
+        g.nameTop = nameTop;
+        // target: number (+unit) right of centre, on the scale's baseline
+        const cand = words.filter(w => /\d/.test(w.text) && w.cx > g.cx + h && w.cx < g.cx + spacing * 0.62 && w.cy > nameTop - h * 7 && w.cy < nameTop - h * 1.5 && !/%/.test(w.text));
+        const t = cand.sort((a, b) => b.cy - a.cy)[0];
+        if (t) {
+          const unitW = words.find(w => /^[KMB]$/i.test(w.text) && w.x > t.x && w.x - (t.x + t.w) < h * 2 && Math.abs(w.cy - t.cy) < h * 1.5);
+          g.target = unitNum(t.text, unitW && unitW.text);
+        } else g.target = null;
+        g.pctRect = { x: g.cx - h * 6.6, y: nameTop - h * 8.1, w: h * 13.2, h: h * 3.4 };
+      });
+      return { table, gauges, spacing };
+    }
+
+    // ---------- small-region OCR with voting ----------
+    async function readRegion(worker, adapter, rect, extra, parse){
+      const votes = new Map();
+      const combos = [[3, 0], [3, 160], [4, 0], [4, 160]].concat(extra ? [[5, 0], [5, 160], [4, 130]] : []);
+      for (const [scale, thr] of combos) {
+        const raw = await adapter.region(rect.x, rect.y, rect.w, rect.h, scale);
+        const { data } = await worker.recognize(await adapter.toInput(prep(raw, thr)));
+        let t = (data.text || "").replace(/\s/g, "");
+        if (parse) { const v = parse(t); t = v == null ? "" : String(v); }
+        if (t) votes.set(t, (votes.get(t) || 0) + 1);
+      }
+      let best = "", bc = 0; votes.forEach((c, t) => { if (c > bc) { best = t; bc = c; } });
+      return { text: best, agree: bc };
+    }
+
+    // ---------- validation: fix OCR digit confusions using MoM ----------
+    const CONF = { "3": "8", "8": "63095", "6": "85", "5": "6", "0": "86", "1": "7", "7": "1", "9": "8" };
+    function variants(s){
+      const out = [];
+      for (let i = 0; i < s.length; i++) for (const r of (CONF[s[i]] || "")) out.push(s.slice(0, i) + r + s.slice(i + 1));
+      return out;
+    }
+    const momOf = (p, c) => (p ? (c - p) / p * 100 : null);
+    const same = (calc, m) => Math.abs(Math.abs(+calc.toFixed(2)) - Math.abs(m)) < 0.001;
+    function validateRow(r){
+      r.flags = r.flags || {};
+      const p = tableNum(r.prevT), c = tableNum(r.currT), m = pctNum(r.momT);
+      r.prev = p; r.curr = c; r.mom = m;
+      if (p == null || c == null) { if (p == null) r.flags.prev = "bad"; if (c == null) r.flags.curr = "bad"; return r; }
+      if (!p) { r.mom = null; return r; }
+      const calc = momOf(p, c);
+      if (m == null) { r.mom = +calc.toFixed(2); r.flags.mom = "calc"; return r; }
+      if (same(calc, m)) { r.mom = +calc.toFixed(2); if (Math.sign(m) !== Math.sign(calc) && Math.abs(calc) >= 0.005) r.flags.mom = "fixed"; return r; }
+      // try one confusable-digit swap in prev, curr or mom
+      const fixes = [];
+      for (const v of variants(String(r.prevT))) { const pv = tableNum(v); if (pv && same(momOf(pv, c), m)) fixes.push(["prev", pv, v]); }
+      for (const v of variants(String(r.currT))) { const cv = tableNum(v); if (cv != null && same(momOf(p, cv), m)) fixes.push(["curr", cv, v]); }
+      for (const v of variants(String(r.momT))) { const mv = pctNum(v); if (mv != null && same(calc, mv)) fixes.push(["mom", null, v]); }
+      if (fixes.length) {
+        const [k, val, txt] = fixes[0];
+        if (k === "prev") { r.prev = val; r.prevT = txt; } if (k === "curr") { r.curr = val; r.currT = txt; }
+        r.mom = +momOf(r.prev, r.curr).toFixed(2);
+        r.flags[k] = fixes.length === 1 ? "fixed" : "check";
+      } else { r.flags.prev = r.flags.curr = r.flags.mom = "check"; }
+      return r;
+    }
+    // parent = sum(children): repair a single confusable digit, else flag
+    function checkSums(rows){
+      const by = n => rows.find(r => r.name === n);
+      const rel = [["New Customer", ["New Register", "Port in", "Pre to post"]], ["New Customer", ["Postpaid Online", "Postpaid @Shop"]], ["Postpaid All", ["New Customer", "Upsell & OnTop"]]];
+      for (const [pn, kn] of rel) {
+        const par = by(pn), kids = kn.map(by);
+        if (!par || !kids.every(Boolean)) continue;
+        for (const k of ["prev", "curr"]) {
+          const T = k + "T", sum = +kids.reduce((a, r) => a + (r[k] || 0), 0).toFixed(2);
+          if (par[k] != null && Math.abs(sum - par[k]) < 0.01) continue;
+          let fixed = false;
+          for (const v of variants(String(par[T]))) if (Math.abs(tableNum(v) - sum) < 0.01) { par[k] = tableNum(v); par[T] = v; par.flags[k] = "fixed"; fixed = true; break; }
+          if (!fixed) for (const kid of kids) {
+            const others = sum - (kid[k] || 0);
+            for (const v of variants(String(kid[T]))) if (Math.abs(others + tableNum(v) - par[k]) < 0.01) { kid[k] = tableNum(v); kid[T] = v; kid.flags[k] = "fixed"; fixed = true; break; }
+            if (fixed) break;
+          }
+          if (!fixed) { par.flags[k] = par.flags[k] || "check"; kids.forEach(r => r.flags[k] = r.flags[k] || "check"); }
+          [par, ...kids].forEach(r => { if (r.prev) r.mom = +momOf(r.prev, r.curr).toFixed(2); });
+        }
+      }
+    }
+
+    // ---------- main ----------
+    async function run(worker, adapter, onProgress){
+      const say = t => onProgress && onProgress(t);
+      say("อ่านโครงหน้า…");
+      await worker.setParameters({ tessedit_pageseg_mode: "11", tessedit_char_whitelist: "" });
+      const S = 2, full = await adapter.region(0, 0, adapter.width, adapter.height, S);
+      const { data } = await worker.recognize(await adapter.toInput(prep(full, 0)), {}, { tsv: true, text: true });
+      const words = parseTSV(data.tsv, S);
+      const L = layout(words, adapter.width);
+      await worker.setParameters({ tessedit_pageseg_mode: "7", tessedit_char_whitelist: "0123456789.,-%" });
+
+      if (L.table && !L.table.labels) {
+        await worker.setParameters({ tessedit_pageseg_mode: "6", tessedit_char_whitelist: "" });
+        const T = L.table, raw = await adapter.region(T.cols[0][0] - 10, T.headerY - 14, T.cols[2][1] - T.cols[0][0] + 10, 28, 3);
+        for (const inv of [true, false]) {
+          const { data: hd } = await worker.recognize(await adapter.toInput(prep(raw, 0, inv)));
+          const ms = (hd.text || "").toUpperCase().match(/\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/g);
+          if (ms && ms.length >= 2) { T.labels = [ms[0], ms[1]]; break; }
+        }
+        await worker.setParameters({ tessedit_pageseg_mode: "7", tessedit_char_whitelist: "0123456789.,-%" });
+      }
+      const gauges = [];
+      for (let i = 0; i < L.gauges.length; i++) {
+        const g = L.gauges[i]; say(`อ่านเกจ ${i + 1}/${L.gauges.length}…`);
+        const rr = await readRegion(worker, adapter, g.pctRect, true, t => { const m = /(\d{1,3})\.(\d{2})%/.exec(t); return m ? +(m[1] + "." + m[2]) : null; });
+        const pct = rr.text ? +rr.text : null;
+        const m = g.name = matchName(g.rawName, GAUGE_NAMES);
+        const dm = DATE.exec(g.d.text);
+        const flags = {};
+        if (pct == null || rr.agree < 3) flags.pct = "check";
+        if (pct != null && g.target != null) flags.actual = "calc";
+        if (g.target == null) flags.target = "missing";
+        gauges.push({ name: m || g.rawName, asof: dm ? dm[0] : "", pct, target: g.target,
+          actual: pct != null && g.target != null ? +(pct / 100 * g.target).toFixed(0) : null, flags });
+      }
+
+      const rows = [];
+      if (L.table) {
+        const T = L.table, pad = Math.max(8, T.th * 1.4);
+        for (let i = 0; i < T.rows.length; i++) {
+          const r = T.rows[i]; say(`อ่านตาราง แถว ${i + 1}/${T.rows.length}…`);
+          const cell = async c => (await readRegion(worker, adapter, { x: T.cols[c][0], y: r.cy - pad, w: T.cols[c][1] - T.cols[c][0], h: pad * 2 })).text;
+          const prevT = await cell(0), currT = await cell(1), momT = await cell(2);
+          if (!/\d/.test(prevT + currT) && !r.rawName) continue;
+          const known = matchName(r.rawName, KNOWN);
+          rows.push(validateRow({ rawName: r.rawName, name: known ? known[0] : r.rawName, level: known ? known[1] : null, nameX: r.nameX, prevT, currT, momT }));
+        }
+        // unknown names: level from indentation
+        const xs = [...new Set(rows.filter(r => r.nameX != null).map(r => Math.round(r.nameX / 8)))].sort((a, b) => a - b);
+        rows.forEach(r => { if (r.level == null) r.level = r.nameX == null ? 0 : Math.min(2, xs.indexOf(Math.round(r.nameX / 8))); if (r.level < 0) r.level = 0; });
+        checkSums(rows);
+      }
+      const dm = gauges.map(g => DATE.exec(g.asof)).find(Boolean);
+      return { gauges, rows, prev_label: L.table && L.table.labels ? L.table.labels[0] : "", curr_label: L.table && L.table.labels ? L.table.labels[1] : "", year: dm ? +dm[3] : null };
+    }
+
+    return { run, prep, parseTSV, layout, tableNum, pctNum, validateRow, matchName };
+  })();
+
+  let workerP = null;
+  function getWorker(){
+    if (!workerP) workerP = Tesseract.createWorker("eng", 1, { cacheMethod: "none" }).catch(e => { workerP = null; throw e; });
+    return workerP;
+  }
+  async function browserAdapter(file){
+    const bmp = await createImageBitmap(file);
+    return {
+      width: bmp.width, height: bmp.height,
+      async region(x, y, w, h, scale){
+        x = Math.max(0, Math.round(x)); y = Math.max(0, Math.round(y));
+        w = Math.max(1, Math.min(bmp.width - x, Math.round(w))); h = Math.max(1, Math.min(bmp.height - y, Math.round(h)));
+        const c = document.createElement("canvas"); c.width = Math.round(w * scale); c.height = Math.round(h * scale);
+        const g = c.getContext("2d", { willReadFrequently: true }); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
+        g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+        g.drawImage(bmp, x, y, w, h, 0, 0, c.width, c.height);
+        const im = g.getImageData(0, 0, c.width, c.height);
+        return { data: im.data, width: c.width, height: c.height };
+      },
+      async toInput(img){
+        const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+        c.getContext("2d").putImageData(new ImageData(img.data, img.width, img.height), 0, 0);
+        return c;
+      },
+    };
+  }
+
+  // ---------- sections / tabs ----------
+  function renderTabs(){
+    const t = $("tabs"); t.textContent = "";
+    S.sections.forEach((s, i) => {
+      const b = document.createElement("button");
+      b.className = "tab" + (i === S.active ? " active" : "");
+      b.textContent = s.name || "(ไม่มีชื่อ)";
+      const bd = document.createElement("span"); bd.className = "badge";
+      bd.textContent = `${s.images.length} รูป` + (s.gauges.length || s.rows.length ? " ✓" : "");
+      b.appendChild(bd);
+      b.addEventListener("click", () => { S.active = i; renderAll(); });
+      t.appendChild(b);
+    });
+    const add = document.createElement("button"); add.className = "btn2"; add.textContent = "+ เพิ่มกลุ่ม";
+    add.addEventListener("click", () => { S.sections.push(newSec("กลุ่มใหม่")); S.active = S.sections.length - 1; renderAll(); $("secName").focus(); $("secName").select(); });
+    t.appendChild(add);
+  }
+  $("secName").addEventListener("input", () => { cur().name = $("secName").value; renderTabs(); $("editName").textContent = cur().name; });
+  $("delSec").addEventListener("click", () => {
+    if (S.sections.length <= 1) return;
+    if (!confirm(`ลบกลุ่ม "${cur().name}" ?`)) return;
+    S.sections.splice(S.active, 1); S.active = Math.max(0, S.active - 1); renderAll();
+  });
+
+  // ---------- images ----------
+  function addImages(files){
+    const sec = cur();
+    [...files].filter(f => f && f.type && f.type.startsWith("image/")).forEach(f => sec.images.push({ file: f, url: URL.createObjectURL(f) }));
+    renderThumbs(); renderTabs();
+  }
+  function renderThumbs(){
+    const box = $("thumbs"); box.textContent = "";
+    cur().images.forEach((im, i) => {
+      const d = document.createElement("div"); d.className = "thumb";
+      const img = document.createElement("img"); img.src = im.url; img.alt = "รูปที่ " + (i + 1);
+      const x = document.createElement("button"); x.textContent = "✕"; x.setAttribute("aria-label", "ลบรูป");
+      x.addEventListener("click", () => { cur().images.splice(i, 1); renderThumbs(); renderTabs(); });
+      d.append(img, x); box.appendChild(d);
+    });
+  }
+  const drop = $("drop");
+  drop.addEventListener("click", () => $("file").click());
+  drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("file").click(); } });
+  $("file").addEventListener("change", e => { addImages(e.target.files); e.target.value = ""; });
+  drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); addImages(e.dataTransfer.files); });
+  document.addEventListener("paste", e => {
+    const files = [...(e.clipboardData ? e.clipboardData.items : [])].filter(it => it.type.startsWith("image/")).map(it => it.getAsFile());
+    if (files.length) { e.preventDefault(); addImages(files); }
+  });
+
+  const num = v => (v === null || v === undefined || v === "" || isNaN(+v)) ? null : +v;
+  function applyExtract(sec, results){
+    const G = new Map(), R = new Map();
+    for (const d of results) {
+      for (const g of d.gauges || []) { const k = (g.name || "").toLowerCase(); const o = G.get(k);
+        if (!o) G.set(k, { ...g, flags: { ...g.flags } });
+        else for (const f of ["asof", "pct", "target", "actual"]) if (o[f] == null || o[f] === "") { o[f] = g[f]; if (g.flags[f]) o.flags[f] = g.flags[f]; else delete o.flags[f]; } }
+      for (const r of d.rows || []) { const k = (r.name || "").toLowerCase(); if (!R.has(k)) R.set(k, { name: r.name, level: r.level, prev: r.prev, curr: r.curr, mom: r.mom, flags: { ...r.flags } }); }
+      if (d.prev_label && !$("prevLbl").value) $("prevLbl").value = d.prev_label;
+      if (d.curr_label && !$("currLbl").value) $("currLbl").value = d.curr_label;
+      if (d.year && !$("yearIn").value) $("yearIn").value = String(d.year);
+    }
+    sec.gauges = [...G.values()]; sec.rows = [...R.values()];
+    if (!$("deckTitle").value && $("currLbl").value) $("deckTitle").value = `Area South Performance — ${monthName()} ${$("yearIn").value}`.trim();
+  }
+
+  async function readSections(list){
+    const st = $("readStatus"); st.classList.remove("err");
+    const todo = list.filter(s => s.images.length);
+    if (!todo.length) { st.classList.add("err"); st.textContent = "ยังไม่มีรูปในกลุ่มที่เลือก"; return; }
+    if (typeof Tesseract === "undefined") { st.classList.add("err"); st.textContent = "โหลดตัวอ่าน OCR ไม่สำเร็จ — เช็กอินเทอร์เน็ตแล้วรีเฟรช"; return; }
+    $("readOne").disabled = $("readAll").disabled = true;
+    const errs = []; let done = 0;
+    try {
+      st.textContent = "กำลังโหลดตัวอ่าน OCR… (ครั้งแรกอาจใช้ 10–30 วินาที)";
+      const worker = await getWorker();
+      for (const sec of todo) {
+        const results = [];
+        for (let i = 0; i < sec.images.length; i++) {
+          const pre = `${sec.name} · รูป ${i + 1}/${sec.images.length} · `;
+          try {
+            const ad = await browserAdapter(sec.images[i].file);
+            results.push(await DashOCR.run(worker, ad, t => { st.textContent = pre + t; }));
+          } catch (e) { errs.push(`${sec.name} รูป ${i + 1}: อ่านไม่ได้`); console.error(e); }
+        }
+        applyExtract(sec, results); done++;
+        if (!sec.gauges.length && !sec.rows.length) errs.push(`${sec.name}: ไม่พบเกจหรือตาราง`);
+        renderTabs(); if (sec === cur()) renderEditors();
+      }
+    } catch (e) { errs.push("เริ่มตัวอ่าน OCR ไม่ได้ — เช็กอินเทอร์เน็ตแล้วรีเฟรช"); console.error(e); }
+    $("readOne").disabled = $("readAll").disabled = false;
+    const flagged = todo.reduce((n, s) => n + s.gauges.concat(s.rows).filter(x => Object.values(x.flags || {}).some(f => f !== "calc")).length, 0);
+    if (errs.length) { st.classList.add("err"); st.textContent = errs.join(" · "); }
+    else st.textContent = `อ่านเสร็จ ${done} กลุ่ม` + (flagged ? ` — มี ${flagged} แถวที่ควรตรวจ (ไฮไลต์สีไว้)` : " — ตรวจตัวเลขก่อน export");
+    renderAll();
+  }
+  $("readOne").addEventListener("click", () => readSections([cur()]));
+  $("readAll").addEventListener("click", () => readSections(S.sections));
+
+  // ---------- editors ----------
+  const toNum = s => { const t = String(s).replace(/,/g, "").trim(); return t === "" || isNaN(+t) ? null : +t; };
+  function inp(val, cls, onChange, obj, field, onCommit){
+    const i = document.createElement("input"); if (cls) { i.className = cls; i.inputMode = "decimal"; }
+    const f = obj && obj.flags && obj.flags[field];
+    if (f) { i.classList.add("f-" + f); i.title = { fixed: "ระบบแก้ให้จากการตรวจความสอดคล้อง", check: "ไม่แน่ใจ ตรวจอีกครั้ง", missing: "อ่านไม่ได้ กรอกเอง", bad: "อ่านไม่ได้ กรอกเอง", calc: "คำนวณให้" }[f] || ""; }
+    i.addEventListener("input", () => { if (obj && obj.flags) { delete obj.flags[field]; i.className = cls || ""; } });
+    if (onCommit) i.addEventListener("change", onCommit);
+    i.value = val === null || val === undefined ? "" : String(val);
+    i.addEventListener("input", () => onChange(i.value));
+    const td = document.createElement("td"); td.appendChild(i); return td;
+  }
+  function delBtn(onClick){
+    const b = document.createElement("button"); b.className = "ghost"; b.textContent = "✕"; b.setAttribute("aria-label", "ลบ");
+    b.addEventListener("click", onClick); const td = document.createElement("td"); td.appendChild(b); return td;
+  }
+  function renderEditors(){
+    const sec = cur();
+    $("editName").textContent = sec.name;
+    const gb = $("gBody"); gb.textContent = "";
+    sec.gauges.forEach((g, i) => {
+      const tr = document.createElement("tr");
+      tr.append(inp(g.name, "", v => g.name = v), inp(g.asof, "", v => g.asof = v),
+        inp(g.pct, "n", v => { g.pct = toNum(v); syncActual(g); }, g, "pct", renderEditors), inp(g.actual, "n", v => g.actual = toNum(v), g, "actual"), inp(g.target, "n", v => { g.target = toNum(v); syncActual(g); }, g, "target", renderEditors),
+        delBtn(() => { sec.gauges.splice(i, 1); renderEditors(); }));
+      gb.appendChild(tr);
+    });
+    const rb = $("rBody"); rb.textContent = "";
+    sec.rows.forEach((r, i) => {
+      const tr = document.createElement("tr");
+      const sel = document.createElement("select");
+      [0, 1, 2].forEach(l => { const o = document.createElement("option"); o.value = l; o.textContent = l; o.selected = l === r.level; sel.appendChild(o); });
+      sel.addEventListener("change", () => r.level = +sel.value);
+      const tds = document.createElement("td"); tds.appendChild(sel);
+      tr.append(inp(r.name, "", v => r.name = v), tds,
+        inp(r.prev, "n", v => r.prev = toNum(v), r, "prev"), inp(r.curr, "n", v => r.curr = toNum(v), r, "curr"), inp(r.mom, "n", v => r.mom = toNum(v), r, "mom"),
+        delBtn(() => { sec.rows.splice(i, 1); renderEditors(); }));
+      rb.appendChild(tr);
+    });
+  }
+  function syncActual(g){
+    if (g.flags && g.flags.actual !== "calc" && g.actual != null) return;
+    if (g.pct != null && g.target != null) { g.actual = Math.round(g.pct / 100 * g.target); g.flags = g.flags || {}; g.flags.actual = "calc"; }
+  }
+  $("addG").addEventListener("click", () => { cur().gauges.push({ name: "", asof: "", pct: null, actual: null, target: null, flags: {} }); renderEditors(); });
+  $("addR").addEventListener("click", () => { cur().rows.push({ name: "", level: 0, prev: null, curr: null, mom: null, flags: {} }); renderEditors(); });
+
+  function renderAll(){ renderTabs(); $("secName").value = cur().name; renderThumbs(); renderEditors(); }
+  renderAll();
+
+  // ---------- formatting helpers ----------
+  const MONTHS = { JAN:"January",FEB:"February",MAR:"March",APR:"April",MAY:"May",JUN:"June",JUL:"July",AUG:"August",SEP:"September",OCT:"October",NOV:"November",DEC:"December" };
+  function monthName(){ const c = $("currLbl").value.trim(); return MONTHS[c.slice(0, 3).toUpperCase()] || c; }
+  function short(v){
+    if (v === null || v === undefined) return "–";
+    const a = Math.abs(v);
+    if (a >= 1e9) return (v / 1e9).toFixed(2) + " B";
+    if (a >= 1e6) return (v / 1e6).toFixed(2) + " M";
+    if (a >= 1e3) return (v / 1e3).toFixed(1) + " K";
+    return String(Math.round(v * 100) / 100);
+  }
+  function full(v){
+    if (v === null || v === undefined) return "–";
+    const dec = Math.abs(v % 1) > 0.0001 ? 2 : 0;
+    return v.toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+  function diffTxt(d){ const a = Math.abs(d); return (d > 0 ? "+" : d < 0 ? "−" : "") + (a >= 1e6 ? (a / 1e6).toFixed(2) + " M" : Math.round(a).toLocaleString("en-US")); }
+  const pctTxt = p => (p > 0 ? "+" : p < 0 ? "−" : "") + Math.abs(p).toFixed(2) + "%";
+  function elapsed(gauges){
+    const f = [];
+    gauges.forEach(g => { const m = /(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(g.asof || ""); if (m) f.push([+m[1], +m[2], +m[3]]); });
+    if (!f.length) return null;
+    const dim = new Date(f[0][2], f[0][1], 0).getDate(), ds = f.map(x => x[0]);
+    const p1 = Math.round(Math.min(...ds) / dim * 100), p2 = Math.round(Math.max(...ds) / dim * 100);
+    return { txt: p1 === p2 ? `${p1}%` : `${p1}–${p2}%`, pct: p2 };
+  }
+
+  // ---------- PowerPoint ----------
+  const C = { dg:"0A5C36", lime:"8DC63F", text:"1F2A24", mute:"6B7570", bg:"F4F7F3", green:"2E8B3E", red:"D32F2F", amber:"F29B1D", track:"E4E8E3", white:"FFFFFF" };
+  const FONT = "Calibri";
+  const shadow = () => ({ type:"outer", color:"000000", opacity:0.10, blur:6, offset:2, angle:90 });
+  const statusColor = p => p >= 100 ? C.dg : p >= 80 ? C.lime : p >= 50 ? C.amber : C.red;
+
+  function prepGauges(sec){
+    return sec.gauges.filter(g => g.name && g.pct !== null).map(g => {
+      let target = g.target, est = false;
+      if (target === null && g.actual !== null && g.pct > 0) { target = g.actual / (g.pct / 100); est = true; }
+      return { ...g, target, est };
+    });
+  }
+  function prepRows(sec){
+    return sec.rows.filter(r => r.name).map(r => {
+      let mom = r.mom;
+      if (mom === null && r.prev && r.curr !== null) mom = (r.curr - r.prev) / r.prev * 100;
+      if (r.prev === 0) mom = null;
+      const diff = (r.prev !== null && r.curr !== null) ? +(r.curr - r.prev).toFixed(2) : null;
+      return { ...r, mom, diff };
+    });
+  }
+
+  function header(pres, s, title, sub, group){
+    s.background = { color: C.bg };
+    s.addText(title, { x:0.5, y:0.3, w: group ? 10.0 : 12.333, h:0.6, fontFace:FONT, fontSize:28, bold:true, color:C.dg, margin:0, fit:"shrink", isTextBox:true });
+    s.addText(sub, { x:0.5, y:0.9, w:12.333, h:0.35, fontFace:FONT, fontSize:13, color:C.mute, margin:0, isTextBox:true });
+    if (group) {
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x:10.8, y:0.38, w:2.033, h:0.46, rectRadius:0.23, fill:{ color:C.dg }, line:{ color:C.dg } });
+      s.addText(group, { x:10.8, y:0.38, w:2.033, h:0.46, fontFace:FONT, fontSize:14, bold:true, color:C.white, align:"center", valign:"middle", margin:0, fit:"shrink", isTextBox:true });
+    }
+  }
+
+  function gaugeSlides(pres, sec, month, year){
+    const gauges = prepGauges(sec); if (!gauges.length) return;
+    const el = elapsed(gauges), dates = [...new Set(gauges.map(g => g.asof).filter(Boolean))];
+    for (let start = 0; start < gauges.length; start += 7) {
+      const chunk = gauges.slice(start, start + 7), s = pres.addSlide();
+      header(pres, s, `Target Achievement — ${month} ${year}`.trim(), "MTD actual vs monthly target" + (dates.length ? "  ·  data as of " + dates.join(", ") : ""), sec.name);
+      const cw = (12.333 - 0.9) / 4, ch = 2.65, x0 = 0.5, y0 = 1.55, gx = 0.3, gy = 0.3;
+      chunk.forEach((g, i) => {
+        const x = x0 + (i % 4) * (cw + gx), y = y0 + Math.floor(i / 4) * (ch + gy), sc = statusColor(g.pct);
+        s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w:cw, h:ch, rectRadius:0.12, fill:{ color:C.white }, line:{ color:"E1E6E0", width:0.75 }, shadow:shadow() });
+        const done = Math.max(0, Math.min(g.pct, 100)), gs = 1.7;
+        s.addChart(pres.charts.DOUGHNUT, [{ name:g.name, labels:["Achieved","Remaining","Hidden"], values:[done, 100 - done, 100] }], {
+          x:x + (cw - gs) / 2, y:y + 0.6, w:gs, h:gs, holeSize:62, firstSliceAng:270, chartColors:[sc, C.track, C.white], dataBorder:{ pt:1, color:C.white },
+          showLegend:false, showValue:false, showPercent:false, showLabel:false, showTitle:false, layout:{ x:0, y:0, w:1, h:1 } });
+        s.addText(g.name, { x:x+0.2, y:y+0.15, w:cw-0.4, h:0.35, fontFace:FONT, fontSize:15, bold:true, color:C.text, margin:0, valign:"middle", isTextBox:true });
+        if (g.asof) s.addText("as of " + g.asof, { x:x+0.2, y:y+0.15, w:cw-0.4, h:0.35, fontFace:FONT, fontSize:10, color:C.mute, align:"right", margin:0, valign:"middle", isTextBox:true });
+        s.addText(g.pct.toFixed(2) + "%", { x:x+0.3, y:y+1.47, w:cw-0.6, h:0.36, fontFace:FONT, fontSize:20, bold:true, color: sc === C.lime ? "5E9A1E" : sc, align:"center", margin:0, valign:"middle", isTextBox:true });
+        s.addText([{ text:"Actual  ", options:{ color:C.mute } }, { text:short(g.actual), options:{ bold:true, color:C.text } }], { x:x+0.2, y:y+1.88, w:(cw-0.4)/2, h:0.26, fontFace:FONT, fontSize:11, margin:0, isTextBox:true });
+        s.addText([{ text:"Target  ", options:{ color:C.mute } }, { text:(g.est ? "~" : "") + short(g.target), options:{ bold:true, color:C.text } }], { x:x+0.2+(cw-0.4)/2, y:y+1.88, w:(cw-0.4)/2, h:0.26, fontFace:FONT, fontSize:11, align:"right", margin:0, isTextBox:true });
+        if (g.actual !== null && g.target !== null) {
+          const gap = g.target - g.actual, over = gap <= 0;
+          const fill = over ? "E3F0E8" : g.pct >= 80 ? "EEF6E4" : g.pct >= 50 ? "FDF1DF" : "FBE6E6";
+          const col = over ? C.dg : g.pct >= 80 ? "4F7F1A" : g.pct >= 50 ? "A35F00" : C.red;
+          s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x:x+0.2, y:y+2.2, w:cw-0.4, h:0.32, rectRadius:0.16, fill:{ color:fill }, line:{ color:fill } });
+          s.addText(over ? "Above target  +" + short(-gap) : "Gap to target  " + short(gap), { x:x+0.2, y:y+2.2, w:cw-0.4, h:0.32, fontFace:FONT, fontSize:11, bold:true, color:col, align:"center", valign:"middle", margin:0, isTextBox:true });
+        }
+      });
+      const k = chunk.length, x = x0 + (k % 4) * (cw + gx), y = y0 + Math.floor(k / 4) * (ch + gy);
+      if (k < 8) {
+        s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w:cw, h:ch, rectRadius:0.12, fill:{ color:C.dg }, line:{ color:C.dg }, shadow:shadow() });
+        s.addText("Status overview", { x:x+0.25, y:y+0.15, w:cw-0.5, h:0.35, fontFace:FONT, fontSize:15, bold:true, color:C.white, margin:0, valign:"middle", isTextBox:true });
+        [["≥ 100% of target", gauges.filter(g => g.pct >= 100).length, C.lime], ["80 – 99%", gauges.filter(g => g.pct >= 80 && g.pct < 100).length, "C7E59C"],
+         ["50 – 79%", gauges.filter(g => g.pct >= 50 && g.pct < 80).length, C.amber], ["< 50%", gauges.filter(g => g.pct < 50).length, "FF6B6B"]].forEach(([lbl, n, c], j) => {
+          const yy = y + 0.62 + j * 0.36;
+          s.addShape(pres.shapes.OVAL, { x:x+0.28, y:yy+0.08, w:0.16, h:0.16, fill:{ color:c }, line:{ color:c } });
+          s.addText(lbl, { x:x+0.55, y:yy, w:1.6, h:0.32, fontFace:FONT, fontSize:12, color:C.white, margin:0, valign:"middle", isTextBox:true });
+          s.addText(String(n), { x:x+cw-0.85, y:yy, w:0.6, h:0.32, fontFace:FONT, fontSize:16, bold:true, color:C.white, align:"right", margin:0, valign:"middle", isTextBox:true });
+        });
+        if (el) s.addText("Month elapsed ≈ " + el.txt, { x:x+0.25, y:y+2.15, w:cw-0.5, h:0.3, fontFace:FONT, fontSize:10.5, italic:true, color:"CFE6D6", margin:0, isTextBox:true });
+      }
+      s.addNotes("Gauges are native doughnut charts: right-click > Edit Data to change Achieved/Remaining." + (gauges.some(g => g.est) ? " Targets marked ~ are back-calculated from Actual / %." : ""));
+    }
+  }
+
+  function tableSlides(pres, sec, prevL, currL, year){
+    const rows = prepRows(sec);
+    for (let start = 0; start < rows.length; start += 16) {
+      const chunk = rows.slice(start, start + 16), s = pres.addSlide();
+      header(pres, s, `Month-over-Month: ${prevL} vs ${currL} ${year}`.trim() + (start ? " (cont.)" : ""), "▲ growth  ▼ decline", sec.name);
+      const data = [["PRODUCT", prevL.toUpperCase(), currL.toUpperCase(), "DIFF", "MoM"].map((t, i) => ({ text:t, options:{ bold:true, color:C.white, fill:{ color:C.dg }, align: i ? "right" : "left", fontSize:12 } }))];
+      chunk.forEach((r, i) => {
+        const up = r.mom !== null ? r.mom >= 0 : (r.diff || 0) >= 0, col = up ? C.green : C.red;
+        const fill = r.level === 1 ? "E6EEE3" : (r.level === 0 && i % 2 === 1 ? "F7F9F6" : "FFFFFF");
+        const base = { fill:{ color:fill }, fontSize: r.level === 2 ? 11 : 12, bold: r.level < 2, color:C.text };
+        data.push([
+          { text:r.name, options:{ ...base, margin:[0, 0.1, 0, [0.12, 0.4, 0.7][r.level]], color: r.level === 2 ? "3A443E" : C.text } },
+          { text:full(r.prev), options:{ ...base, bold:false, align:"right" } },
+          { text:full(r.curr), options:{ ...base, bold:false, align:"right" } },
+          { text: r.diff === null ? "–" : (r.diff > 0 ? "+" : r.diff < 0 ? "−" : "") + full(Math.abs(r.diff)), options:{ ...base, bold:false, align:"right", color:col } },
+          { text: r.mom === null ? (r.prev === 0 && r.curr ? "New" : "–") : (up ? "▲ " : "▼ ") + Math.abs(r.mom).toFixed(2) + "%", options:{ ...base, bold:true, align:"right", color:col } },
+        ]);
+      });
+      s.addTable(data, { x:0.5, y:1.5, w:12.333, colW:[4.4, 2.0, 2.0, 2.0, 1.933], rowH:0.32, fontFace:FONT, valign:"middle", margin:[0, 0.12, 0, 0.12], border:{ type:"solid", pt:0.5, color:"DDE3DB" } });
+    }
+  }
+
+  function movedSlide(pres, sec, month, prevL, currL, year){
+    const rows = prepRows(sec), gauges = prepGauges(sec), el = elapsed(gauges);
+    const chartRows = rows.filter(r => r.mom !== null && !/@shop|online/i.test(r.name)).sort((a, b) => b.mom - a.mom).slice(0, 16);
+    if (!chartRows.length) return;
+    const s = pres.addSlide();
+    header(pres, s, `What Moved in ${month}`.trim(), `MoM % change by product line (${currL} vs ${prevL} ${year})`.replace(/\s+\)/, ")"), sec.name);
+    const items = chartRows.slice().reverse(), vals = items.map(r => r.mom);
+    const lo = Math.min(0, Math.floor((Math.min(...vals) - 2) / 5) * 5) / 100, hi = Math.max(0, Math.ceil((Math.max(...vals) + 2) / 5) * 5) / 100;
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x:0.5, y:1.5, w:7.5, h:5.5, rectRadius:0.12, fill:{ color:C.white }, line:{ color:"E1E6E0", width:0.75 }, shadow:shadow() });
+    s.addChart(pres.charts.BAR, [{ name:"MoM %", labels:items.map(r => r.name), values:vals.map(v => v / 100) }], {
+      x:0.65, y:1.65, w:7.2, h:5.2, barDir:"bar", barGrouping:"clustered", barGapWidthPct:45, chartColors:[C.green], invertedColors:[C.red],
+      showValue:true, dataLabelPosition:"outEnd", dataLabelFormatCode:"+0.0%;-0.0%;0.0%", dataLabelColor:C.text, dataLabelFontSize:10, dataLabelFontBold:true,
+      catAxisLabelColor:C.text, catAxisLabelFontSize:11, catAxisLabelFontFace:FONT, catAxisLineShow:false, catAxisLabelPos:"low",
+      valAxisLabelColor:C.mute, valAxisLabelFontSize:10, valAxisLabelFormatCode:"0%", valAxisMinVal:lo, valAxisMaxVal:hi, valAxisMajorUnit:0.05,
+      valGridLine:{ color:"E6E9E5", size:0.5 }, catGridLine:{ style:"none" }, showLegend:false });
+    const line = r => `${r.name} ${pctTxt(r.mom)}` + (r.diff !== null ? ` (${diffTxt(r.diff)})` : "");
+    const ups = chartRows.filter(r => r.mom > 0).slice(0, 3), downs = chartRows.filter(r => r.mom < 0).sort((a, b) => a.mom - b.mom).slice(0, 3);
+    const cards = [
+      { t:"Growth drivers", c:C.green, sym:"▲", body: ups.length ? ups.map(line).join("\n") : "No line grew MoM" },
+      { t:"Declines to watch", c:C.red, sym:"▼", body: downs.length ? downs.map(line).join("\n") : "No line declined MoM" },
+    ];
+    if (gauges.length) {
+      const risk = gauges.filter(g => g.pct < 50).sort((a, b) => a.pct - b.pct), low = gauges.slice().sort((a, b) => a.pct - b.pct)[0];
+      cards.push({ t:"Target risk", c:C.amber, sym:"!", body: risk.length
+        ? risk.slice(0, 4).map(g => `${g.name} ${Math.round(g.pct)}%`).join(", ") + " of target" + (el ? ` with ~${el.pct}% of the month elapsed` : "")
+        : `All lines ≥ 50% of target; lowest is ${low.name} at ${Math.round(low.pct)}%` });
+    }
+    cards.forEach((cd, k) => {
+      const x = 8.3, y = 1.5 + k * 1.9, w = 4.533, h = 1.7;
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w, h, rectRadius:0.12, fill:{ color:C.white }, line:{ color:"E1E6E0", width:0.75 }, shadow:shadow() });
+      s.addShape(pres.shapes.OVAL, { x:x+0.22, y:y+0.2, w:0.42, h:0.42, fill:{ color:cd.c }, line:{ color:cd.c } });
+      s.addText(cd.sym, { x:x+0.22, y:y+0.2, w:0.42, h:0.42, fontFace:FONT, fontSize:14, bold:true, color:C.white, align:"center", valign:"middle", margin:0, isTextBox:true });
+      s.addText(cd.t, { x:x+0.78, y:y+0.2, w:w-1.0, h:0.42, fontFace:FONT, fontSize:15, bold:true, color:C.text, valign:"middle", margin:0, isTextBox:true });
+      s.addText(cd.body, { x:x+0.78, y:y+0.7, w:w-1.0, h:0.88, fontFace:FONT, fontSize:11.5, color:"3A443E", valign:"top", margin:0, fit:"shrink", isTextBox:true });
+    });
+  }
+
+  function compareSlide(pres, secs, month, year){
+    const withG = secs.filter(s => prepGauges(s).length);
+    if (withG.length < 2) return;
+    const names = [];
+    withG.forEach(s => prepGauges(s).forEach(g => { if (!names.includes(g.name)) names.push(g.name); }));
+    const s = pres.addSlide();
+    header(pres, s, `Target Achievement by Group — ${month} ${year}`.trim(), "% of monthly target, MTD  ·  " + withG.map(x => x.name).join(" vs "), null);
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x:0.5, y:1.5, w:12.333, h:5.5, rectRadius:0.12, fill:{ color:C.white }, line:{ color:"E1E6E0", width:0.75 }, shadow:shadow() });
+    const data = withG.map(sec => {
+      const map = Object.fromEntries(prepGauges(sec).map(g => [g.name.toLowerCase(), g.pct]));
+      return { name: sec.name, labels: names, values: names.map(n => (map[n.toLowerCase()] ?? 0) / 100) };
+    });
+    const maxV = Math.max(1, ...data.flatMap(d => d.values));
+    s.addChart(pres.charts.BAR, data, {
+      x:0.7, y:1.65, w:11.9, h:5.2, barDir:"col", barGrouping:"clustered", barGapWidthPct:60,
+      chartColors:[C.dg, C.lime, C.amber, "4A90A4", "8E6BB5", "C0504D"].slice(0, data.length),
+      showValue:true, dataLabelPosition:"outEnd", dataLabelFormatCode:"0%", dataLabelColor:C.text, dataLabelFontSize:10,
+      catAxisLabelColor:C.text, catAxisLabelFontSize:12, catAxisLabelFontFace:FONT, catAxisLineShow:false,
+      valAxisLabelColor:C.mute, valAxisLabelFontSize:10, valAxisLabelFormatCode:"0%", valAxisMinVal:0, valAxisMaxVal:Math.ceil(maxV * 10 + 1) / 10, valAxisMajorUnit:0.25,
+      valGridLine:{ color:"E6E9E5", size:0.5 }, catGridLine:{ style:"none" },
+      showLegend:true, legendPos:"t", legendFontSize:12, legendFontFace:FONT, legendColor:C.text });
+    s.addNotes("Native clustered column chart — right-click > Edit Data to change values. Products missing in a group show as 0%.");
+  }
+
+  function coverSlide(pres, title, secs, month, year){
+    const s = pres.addSlide();
+    s.background = { color: C.dg };
+    s.addText(title, { x:0.8, y:2.3, w:11.7, h:1.3, fontFace:FONT, fontSize:40, bold:true, color:C.white, margin:0, fit:"shrink", isTextBox:true });
+    s.addText(`${month} ${year}`.trim() + "  ·  " + secs.map(x => x.name).join("  ·  "), { x:0.8, y:3.7, w:11.7, h:0.5, fontFace:FONT, fontSize:18, color:"CFE6D6", margin:0, isTextBox:true });
+    s.addShape(pres.shapes.OVAL, { x:0.8, y:4.6, w:0.28, h:0.28, fill:{ color:C.lime }, line:{ color:C.lime } });
+    s.addText("Target achievement  ·  Month-over-month  ·  Key movers", { x:1.25, y:4.55, w:10, h:0.38, fontFace:FONT, fontSize:14, color:C.white, margin:0, valign:"middle", isTextBox:true });
+  }
+
+  $("export").addEventListener("click", async () => {
+    const st = $("exportStatus"); st.classList.remove("err");
+    const secs = S.sections.filter(s => prepGauges(s).length || prepRows(s).length);
+    if (!secs.length) { st.classList.add("err"); st.textContent = "ยังไม่มีข้อมูลในกลุ่มไหนเลย"; return; }
+    if (typeof PptxGenJS === "undefined") { st.classList.add("err"); st.textContent = "โหลดไลบรารี PowerPoint ไม่สำเร็จ ลองรีเฟรช"; return; }
+    $("export").disabled = true; st.textContent = "กำลังสร้างไฟล์…";
+    try {
+      const pres = new PptxGenJS(); pres.layout = "LAYOUT_WIDE";
+      const month = monthName(), year = $("yearIn").value.trim();
+      const prevL = $("prevLbl").value.trim() || "Prev", currL = $("currLbl").value.trim() || "Curr";
+      const title = $("deckTitle").value.trim() || `Area South Performance — ${month} ${year}`.trim();
+      pres.title = title;
+      coverSlide(pres, title, secs, month, year);
+      compareSlide(pres, secs, month, year);
+      secs.forEach(sec => { gaugeSlides(pres, sec, month, year); tableSlides(pres, sec, prevL, currL, year); movedSlide(pres, sec, month, prevL, currL, year); });
+      const fname = title.replace(/[\\/:*?"<>|—]+/g, " ").trim().replace(/\s+/g, "_").replace(/_+/g, "_");
+      await pres.writeFile({ fileName: fname + ".pptx" });
+      st.textContent = `เรียบร้อย ✓ (${secs.length} กลุ่ม)`;
+    } catch (e) {
+      st.classList.add("err"); st.textContent = "สร้างไฟล์ไม่สำเร็จ: " + (e.message || e);
+    } finally { $("export").disabled = false; }
+  });
+})();
+</script>
+</body>
+</html>
